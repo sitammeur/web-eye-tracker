@@ -28,7 +28,6 @@ class EyeInfo:
         init_calib_points(): Initializes the calibration points DataFrame.
         init_points(): Initializes the eye points DataFrame.
         plot(): Plots the eye data.
-
     """
 
     def __init__(
@@ -143,7 +142,6 @@ class EyeInfo:
             ax (matplotlib.axes.Axes): Axes object for plotting.
             display_centroid (bool): Flag indicating if centroid should be displayed.
             colors (list): List of colors for each dataset.
-
         """
         sns.set(style="whitegrid")
         for i in range(len(datasets)):
