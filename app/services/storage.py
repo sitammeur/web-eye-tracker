@@ -16,8 +16,8 @@ def save_file_locally(file, folder):
     Save a file locally in the specified folder.
 
     Args:
-        file: The file to be saved.
-        folder: The folder where the file will be saved.
+        - file: The file to be saved.
+        - folder: The folder where the file will be saved.
 
     Returns:
         The path of the saved file relative to the specified folder.

@@ -11,23 +11,23 @@ class EyeInfo:
     Class representing eye information for calibration and prediction.
 
     Attributes:
-        calib_points (list): List of calibration points.
-        dataset (str): Path to the dataset file.
-        screen_width (int): Width of the screen.
-        screen_height (int): Height of the screen.
-        is_right (bool): Flag indicating if the eye is the right eye.
-        is_left (bool): Flag indicating if the eye is the left eye.
-        right_eye_df (pandas.DataFrame): DataFrame containing right eye data.
-        left_eye_df (pandas.DataFrame): DataFrame containing left eye data.
-        prediction_df (pandas.DataFrame): DataFrame containing prediction data.
-        calib_df (pandas.DataFrame): DataFrame containing calibration data.
-        palette (list): List of colors for plotting.
+        - calib_points (list): List of calibration points.
+        - dataset (str): Path to the dataset file.
+        - screen_width (int): Width of the screen.
+        - screen_height (int): Height of the screen.
+        - is_right (bool): Flag indicating if the eye is the right eye.
+        - is_left (bool): Flag indicating if the eye is the left eye.
+        - right_eye_df (pandas.DataFrame): DataFrame containing right eye data.
+        - left_eye_df (pandas.DataFrame): DataFrame containing left eye data.
+        - prediction_df (pandas.DataFrame): DataFrame containing prediction data.
+        - calib_df (pandas.DataFrame): DataFrame containing calibration data.
+        - palette (list): List of colors for plotting.
 
     Methods:
-        init_eye(): Initializes the calibration points and eye points.
-        init_calib_points(): Initializes the calibration points DataFrame.
-        init_points(): Initializes the eye points DataFrame.
-        plot(): Plots the eye data.
+        - init_eye(): Initializes the calibration points and eye points.
+        - init_calib_points(): Initializes the calibration points DataFrame.
+        - init_points(): Initializes the eye points DataFrame.
+        - plot(): Plots the eye data.
     """
 
     def __init__(
@@ -132,16 +132,16 @@ class EyeInfo:
         Plots the eye data.
 
         Args:
-            datasets (list): List of DataFrames containing eye data.
-            keys_x (list): List of x-axis keys for each dataset.
-            keys_y (list): List of y-axis keys for each dataset.
-            is_subset (bool): Flag indicating if the data is a subset.
-            subset_size (int): Size of each subset.
-            lock_plot (bool): Flag indicating if the plot should be locked to screen dimensions.
-            eyes_only (bool): Flag indicating if only eye points should be plotted.
-            ax (matplotlib.axes.Axes): Axes object for plotting.
-            display_centroid (bool): Flag indicating if centroid should be displayed.
-            colors (list): List of colors for each dataset.
+            - datasets (list): List of DataFrames containing eye data.
+            - keys_x (list): List of x-axis keys for each dataset.
+            - keys_y (list): List of y-axis keys for each dataset.
+            - is_subset (bool): Flag indicating if the data is a subset.
+            - subset_size (int): Size of each subset.
+            - lock_plot (bool): Flag indicating if the plot should be locked to screen dimensions.
+            - eyes_only (bool): Flag indicating if only eye points should be plotted.
+            - ax (matplotlib.axes.Axes): Axes object for plotting.
+            - display_centroid (bool): Flag indicating if centroid should be displayed.
+            - colors (list): List of colors for each dataset.
         """
         sns.set(style="whitegrid")
         for i in range(len(datasets)):

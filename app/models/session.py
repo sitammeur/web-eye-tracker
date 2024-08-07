@@ -3,17 +3,17 @@ class Session:
     Represents a session in the eye tracking application.
 
     Attributes:
-        id (int): The unique identifier of the session.
-        title (str): The title of the session.
-        description (str): The description of the session.
-        user_id (int): The user ID associated with the session.
-        created_date (datetime): The date and time when the session was created.
-        website_url (str): The URL of the website being tracked.
-        screen_record_url (str): The URL of the screen recording for the session.
-        webcam_record_url (str): The URL of the webcam recording for the session.
-        heatmap_url (str): The URL of the heatmap image for the session.
-        calib_points (list): The calibration points used in the session.
-        iris_points (list): The iris tracking points recorded in the session.
+        - id (int): The unique identifier of the session.
+        - title (str): The title of the session.
+        - description (str): The description of the session.
+        - user_id (int): The user ID associated with the session.
+        - created_date (datetime): The date and time when the session was created.
+        - website_url (str): The URL of the website being tracked.
+        - screen_record_url (str): The URL of the screen recording for the session.
+        - webcam_record_url (str): The URL of the webcam recording for the session.
+        - heatmap_url (str): The URL of the heatmap image for the session.
+        - calib_points (list): The calibration points used in the session.
+        - iris_points (list): The iris tracking points recorded in the session.
     """
 
     def __init__(
