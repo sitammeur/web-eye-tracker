@@ -1,3 +1,4 @@
+# Hyperparameters for the models
 hyperparameters = {
     "Lasso Regression": {
         "param_grid": {
