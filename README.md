@@ -42,7 +42,7 @@ flask run
 
 ## Contributors ✨
 
-The project is selected to be part of the [Google Summer of Code 2024](https://summerofcode.withgoogle.com/programs/2024/organizations/uramaki-lab) program, and [Vinícius Cavalcanti](https://github.com/hvini) is the main mentor of the project along with Marc Gonzalez Capdevila, Karine Pistili Rodrigues. The active development of the project is being done by [Sitam Meur](https://www.linkedin.com/in/sitammeur/), selected as a GSoC'24 student for the project. Here are the project details in the [GSoC'24 website](https://summerofcode.withgoogle.com/programs/2024/projects/lEPzZg7S).
+The project is selected to be part of the [Google Summer of Code 2024](https://summerofcode.withgoogle.com/programs/2024/organizations/uramaki-lab) program, and [Vinícius Cavalcanti](https://github.com/hvini) is the main mentor of the project along with [Marc Gonzalez Capdevila](https://github.com/marcgc21), [Karine Pistili Rodrigues](https://github.com/KarinePistili). The active development of the project is being done by [Sitam Meur](https://github.com/sitamgithub-MSIT), selected as a GSoC'24 student for the project. Here are the project details in the [GSoC'24 website](https://summerofcode.withgoogle.com/programs/2024/projects/lEPzZg7S).
 
 To see the full list of contributions, check out the ahead commits of the "develop" branch concerning the "main" branch. Full logs of the project development can be found in the [Daily Work Progress](https://docs.google.com/document/d/1RjCnGjYYgPKvFUrN8hSjPX29aayWr6eEopeCN3QZwEQ/edit?usp=sharing) file. Hoping to see your name in the list of contributors soon! 🚀
 
