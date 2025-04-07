@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
 from app.routes import session as session_route
 import os
@@ -50,6 +50,9 @@ CORS(app)
 #         return session_route.session_results()
 #     return Response('Invalid request method for route', status=405, mimetype='application/json')
 
+@app.route('/api/session/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'ok'}), 200
 
 @app.route('/api/session/calib_validation', methods=['POST'])
 def calib_validation():
