@@ -12,43 +12,101 @@ The project consists of two parts, this repository contains the backend of the a
 
 - [Python 3x](https://www.python.org/downloads/)
 
-### 1. Create virtual environment
+## Setting Up a Virtual Environment
 
-Before installing all dependencies and starting your Flask Server, it is better to create a Python virtual environment. You can use the [venv package](https://docs.python.org/3/library/venv.html) to create a virtual environment. To create a new virtual environment, run the following command:
 
-```
-python -m venv /path/to/new/virtual/environment
-```
-
-Then activate your environment. On Windows for example you can activate with the script:
-
-```
-name-of-event/Scripts/activate
+#### **Linux & macOS**
+##### **Step 1: Create a virtual environment**
+```sh
+python3 -m venv venv
 ```
 
-### 2. Install dependencies
 
-Install all dependencies listed on the requirements.txt with:
-
+##### **Step 2: Activate the virtual environment**
+```sh
+source venv/bin/activate
 ```
+
+##### **Step 3: Install dependencies**
+```sh
 pip install -r requirements.txt
 ```
 
-### 3. Run the Flask API
-
-```
+##### **Step 4: Run Flask**
+```sh
 flask run
 ```
 
-## Contributors ✨
+---
 
-The project is selected to be part of the [Google Summer of Code 2024](https://summerofcode.withgoogle.com/programs/2024/organizations/uramaki-lab) program, and [Vinícius Cavalcanti](https://github.com/hvini) is the main mentor of the project along with [Marc Gonzalez Capdevila](https://github.com/marcgc21), [Karine Pistili Rodrigues](https://github.com/KarinePistili). The active development of the project is being done by [Sitam Meur](https://github.com/sitamgithub-MSIT), selected as a GSoC'24 student for the project. Here are the project details in the [GSoC'24 website](https://summerofcode.withgoogle.com/programs/2024/projects/lEPzZg7S).
+#### **Windows**
+##### **Step 1: Create a virtual environment**
+```sh
+python -m venv venv
+```
 
-To see the full list of contributions, check out the ahead commits of the "develop" branch concerning the "main" branch. Full logs of the project development can be found in the [Daily Work Progress](https://docs.google.com/document/d/1RjCnGjYYgPKvFUrN8hSjPX29aayWr6eEopeCN3QZwEQ/edit?usp=sharing) file. Hoping to see your name in the list of contributors soon! 🚀
+##### **Step 2: Activate the virtual environment**
+```sh
+venv\Scripts\activate
+```
+
+##### **Step 3: Install dependencies**
+```sh
+pip install -r requirements.txt
+```
+
+##### **Step 4: Run Flask**
+```sh
+flask run
+```
+
+---
+
+### **2. Using Conda (Works on Linux, macOS, and Windows)**
+
+#### **Step 1: Create a Conda virtual environment**
+```sh
+conda create --name flask_env python=3.10
+```
+
+#### **Step 2: Activate the environment**
+```sh
+conda activate flask_env
+```
+
+#### **Step 3: Install dependencies**
+```sh
+pip install -r requirements.txt
+```
+
+#### **Step 4: Run Flask**
+```sh
+flask run
+```
+
+
+### **Additional Notes**
+- If you face issues running `flask run`, try:
+
+  ```sh
+  python -m flask run
+  ```
+- If Flask is not installed, install it manually:
+
+  ```sh
+  pip install flask
+  ```
+- On **Windows**, if `venv\Scripts\activate` doesn't work, **run PowerShell as Administrator** and enable scripts:
+
+  ```sh
+  Set-ExecutionPolicy Unrestricted -Scope Process
+  ```
 
 ## 🧑‍🤝‍🧑 Contributing
 
 Anyone is free to contribute to this project. Just do a pull request with your code and if it is all good we will accept it. You can also help us look for bugs if you find anything that creates an issue.
+To see the full list of contributions, check out the ahead commits of the "develop" branch concerning the "main" branch. Full logs of the project development can be found in the [Daily Work Progress](https://docs.google.com/document/d/1RjCnGjYYgPKvFUrN8hSjPX29aayWr6eEopeCN3QZwEQ/edit?usp=sharing) file. Hoping to see your name in the list of contributors soon! 🚀
+
 
 ## 📃 License
 
