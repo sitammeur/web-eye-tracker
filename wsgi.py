@@ -14,8 +14,4 @@ import os
 from app.main import app
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-=======
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
->>>>>>> 42a70612727088340cf95589066fb593eb246472
