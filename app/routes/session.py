@@ -1,21 +1,34 @@
-from flask import Flask, request, Response, send_file
-from app.services.storage import save_file_locally
-from app.models.session import Session
-#from app.services import database as db
-from app.services import gaze_tracker
+# Necesary imports
+import os
+import re
 import time
 import json
 import csv
+
 from pathlib import Path
 import os
 import pandas as pd
 import traceback
 import re
+<<<<<<< HEAD
 import requests
+=======
+from flask import Flask, request, Response, send_file
+>>>>>>> 42a70612727088340cf95589066fb593eb246472
 
-ALLOWED_EXTENSIONS = {'txt', 'webm'}
-COLLECTION_NAME = u'session'
+# Local imports from app
+from app.services.storage import save_file_locally
+from app.models.session import Session
 
+# from app.services import database as db
+from app.services import gaze_tracker
+
+
+# Constants
+ALLOWED_EXTENSIONS = {"txt", "webm"}
+COLLECTION_NAME = "session"
+
+# Initialize Flask app
 app = Flask(__name__)
 
 
@@ -142,6 +155,7 @@ app = Flask(__name__)
 
 
 def calib_results():
+<<<<<<< HEAD
     from_ruxailab = json.loads(request.form['from_ruxailab'])
     file_name = json.loads(request.form['file_name'])
     fixed_points = json.loads(request.form['fixed_circle_iris_points'])
@@ -149,39 +163,81 @@ def calib_results():
     screen_height = json.loads(request.form['screen_height'])
     screen_width = json.loads(request.form['screen_width'])
     k = json.loads(request.form['k'])
+=======
+    """
+    Generate calibration results.
+
+    This function generates calibration results based on the provided form data.
+    It saves the calibration points to a CSV file. Then, it uses the gaze_tracker module to predict the calibration results.
+
+    Returns:
+        Response: A JSON response containing the calibration results.
+
+    Raises:
+        IOError: If there is an error while writing to the CSV files.
+    """
+    # Get form data from request
+    file_name = json.loads(request.form["file_name"])
+    fixed_points = json.loads(request.form["fixed_circle_iris_points"])
+    calib_points = json.loads(request.form["calib_circle_iris_points"])
+    screen_height = json.loads(request.form["screen_height"])
+    screen_width = json.loads(request.form["screen_width"])
+    k = json.loads(request.form["k"])
+    model = json.loads(request.form["model"])
+>>>>>>> 42a70612727088340cf95589066fb593eb246472
 
     # Generate csv dataset of calibration points
     os.makedirs(
-        f'{Path().absolute()}/app/services/calib_validation/csv/data/', exist_ok=True)
-    calib_csv_file = f'{Path().absolute()}/app/services/calib_validation/csv/data/{file_name}_fixed_train_data.csv'
-    csv_columns = ['left_iris_x', 'left_iris_y',
-                   'right_iris_x', 'right_iris_y', 'point_x', 'point_y', 'screen_height', 'screen_width']
+        f"{Path().absolute()}/app/services/calib_validation/csv/data/", exist_ok=True
+    )
+
+    # Generate csv of calibration points with following columns
+    calib_csv_file = f"{Path().absolute()}/app/services/calib_validation/csv/data/{file_name}_fixed_train_data.csv"
+    csv_columns = [
+        "left_iris_x",
+        "left_iris_y",
+        "right_iris_x",
+        "right_iris_y",
+        "point_x",
+        "point_y",
+        "screen_height",
+        "screen_width",
+    ]
+
+    # Save calibration points to CSV file
     try:
-        with open(calib_csv_file, 'w') as csvfile:
+        # Open CSV file
+        with open(calib_csv_file, "w") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
             writer.writeheader()
+
+            # Write calibration points to CSV file
             for data in fixed_points:
-                data['screen_height'] = screen_height
-                data['screen_width'] = screen_width
+                data["screen_height"] = screen_height
+                data["screen_width"] = screen_width
                 writer.writerow(data)
+
+    # Handle I/O error
     except IOError:
         print("I/O error")
 
     # Generate csv of iris points of session
     os.makedirs(
-        f'{Path().absolute()}/app/services/calib_validation/csv/data/', exist_ok=True)
-    predict_csv_file = f'{Path().absolute()}/app/services/calib_validation/csv/data/{file_name}_predict_train_data.csv'
-    csv_columns = ['left_iris_x', 'left_iris_y',
-                   'right_iris_x', 'right_iris_y']
+        f"{Path().absolute()}/app/services/calib_validation/csv/data/", exist_ok=True
+    )
+    predict_csv_file = f"{Path().absolute()}/app/services/calib_validation/csv/data/{file_name}_predict_train_data.csv"
+    csv_columns = ["left_iris_x", "left_iris_y", "right_iris_x", "right_iris_y"]
     try:
-        with open(predict_csv_file, 'w') as csvfile:
+        with open(predict_csv_file, "w") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
             writer.writeheader()
             for data in calib_points:
+                # print(data)
                 writer.writerow(data)
     except IOError:
         print("I/O error")
 
+<<<<<<< HEAD
     # Run prediction
     data = gaze_tracker.predict(calib_csv_file, calib_csv_file, k)
 
@@ -194,6 +250,17 @@ def calib_results():
                 "screen_width": screen_width,
                 "k": k
             }
+=======
+    # data = gaze_tracker.train_to_validate_calib(calib_csv_file, predict_csv_file)
+    try:
+        payload = {
+            "session_id": file_name,
+            "model": data,
+            "screen_height": screen_height,
+            "screen_width": screen_width,
+            "k": k
+        }
+>>>>>>> 42a70612727088340cf95589066fb593eb246472
 
             RUXAILAB_WEBHOOK_URL = "https://receivecalibration-ffptzpxikq-uc.a.run.app"
 

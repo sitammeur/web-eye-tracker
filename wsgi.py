@@ -1,5 +1,21 @@
-from app.main import app
+"""
+This script is the entry point for running the web application.
+
+It imports the `app` object from the `main` module and starts the Flask development server.
+
+Debug:
+    The server runs in debug mode if the `debug` argument is set to `True`.
+
+Environment Variables:
+    PORT: The port number on which the server should listen. Defaults to 5000 if not provided.
+"""
+
 import os
+from app.main import app
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+=======
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+>>>>>>> 42a70612727088340cf95589066fb593eb246472
