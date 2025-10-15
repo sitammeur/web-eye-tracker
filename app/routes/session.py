@@ -11,6 +11,7 @@ import os
 import pandas as pd
 import traceback
 import re
+import requests
 
 ALLOWED_EXTENSIONS = {'txt', 'webm'}
 COLLECTION_NAME = u'session'
@@ -141,6 +142,7 @@ app = Flask(__name__)
 
 
 def calib_results():
+    from_ruxailab = json.loads(request.form['from_ruxailab'])
     file_name = json.loads(request.form['file_name'])
     fixed_points = json.loads(request.form['fixed_circle_iris_points'])
     calib_points = json.loads(request.form['calib_circle_iris_points'])
@@ -180,26 +182,31 @@ def calib_results():
     except IOError:
         print("I/O error")
 
-    # data = gaze_tracker.train_to_validate_calib(calib_csv_file, predict_csv_file)
+    # Run prediction
     data = gaze_tracker.predict(calib_csv_file, calib_csv_file, k)
 
-    try:
-        payload = {
-            "session_id": file_name,
-            "model": data,
-            "screen_height": screen_height,
-            "screen_width": screen_width,
-            "k": k
-        }
+    if from_ruxailab:
+        try:
+            payload = {
+                "session_id": file_name,
+                "model": data,
+                "screen_height": screen_height,
+                "screen_width": screen_width,
+                "k": k
+            }
 
-        RUXAILAB_WEBHOOK_URL = "https://us-central1-ruxailab-prod.cloudfunctions.net/receiveCalibration"
+            RUXAILAB_WEBHOOK_URL = "https://receivecalibration-ffptzpxikq-uc.a.run.app"
 
-        resp = requests.post(RUXAILAB_WEBHOOK_URL, json=payload)
-        print("Enviado para RuxaiLab:", resp.status_code, resp.text)
-    except Exception as e:
-        print("Erro ao enviar para RuxaiLab:", e)
+            print("file_name:", file_name)
+
+            resp = requests.post(RUXAILAB_WEBHOOK_URL, json=payload)
+            print("Enviado para RuxaiLab:", resp.status_code, resp.text)
+        except Exception as e:
+            print("Erro ao enviar para RuxaiLab:", e)
 
     return Response(json.dumps(data), status=200, mimetype='application/json')
+
+
 
 def batch_predict():
     try:
