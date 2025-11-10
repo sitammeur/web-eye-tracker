@@ -1,7 +1,37 @@
-Dockerfile
-README.md
+# Arquivos e pastas que não precisam ir pro container
+
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
-__pycache__
-.pytest_cache
+*.pdb
+.pytest_cache/
+*.pytest_cache
+
+# Virtualenvs
+env/
+venv/
+.venv/
+
+# Build / distribuições
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Logs e DB locais
+*.log
+*.sqlite3
+*.db
+
+# Node
+node_modules/
+
+# Outros
+.DS_Store
+*.swp
