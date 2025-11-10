@@ -235,6 +235,90 @@ def predict(data, k, model_X, model_Y):
     # Return the data
     return data
 
+def predict_new_data_simple(calib_csv_path, predict_csv_path, model_X, model_Y, k=3):
+    """
+    Versão simplificada de predict_new_data.
+    Treina modelos nos dados de calibração e prevê coordenadas nos novos dados.
+    Retorna o mesmo formato que a função `predict`.
+    """
+    # -------------------- SCALERS --------------------
+    sc_x = StandardScaler()
+    sc_y = StandardScaler()
+
+    # -------------------- TREINO --------------------
+    df_train = pd.read_csv(calib_csv_path).drop(["screen_height", "screen_width"], axis=1)
+
+    X_train_x = df_train[["left_iris_x", "right_iris_x"]].values
+    y_train_x = df_train["point_x"].values
+    X_train_y = df_train[["left_iris_y", "right_iris_y"]].values
+    y_train_y = df_train["point_y"].values
+
+    X_train_x_scaled = sc_x.fit_transform(X_train_x)
+    X_train_y_scaled = sc_y.fit_transform(X_train_y)
+
+    # Modelos
+    model_fit_x = models[model_X].fit(X_train_x_scaled, y_train_x)
+    model_fit_y = models[model_Y].fit(X_train_y_scaled, y_train_y)
+
+    # -------------------- NOVOS DADOS --------------------
+    df_predict = pd.read_csv(predict_csv_path)
+    X_pred_x = sc_x.transform(df_predict[["left_iris_x", "right_iris_x"]].values)
+    X_pred_y = sc_y.transform(df_predict[["left_iris_y", "right_iris_y"]].values)
+
+    y_pred_x = model_fit_x.predict(X_pred_x)
+    y_pred_y = model_fit_y.predict(X_pred_y)
+
+    # Garantir valores não-negativos
+    y_pred_x = np.clip(y_pred_x, 0, None)
+    y_pred_y = np.clip(y_pred_y, 0, None)
+
+    # -------------------- KMEANS --------------------
+    data_pred = np.array([y_pred_x, y_pred_y]).T
+    kmeans_model = KMeans(n_clusters=k, n_init="auto", init="k-means++")
+    y_kmeans = kmeans_model.fit_predict(data_pred)
+
+    # -------------------- FORMATA DADOS --------------------
+    df_data = pd.DataFrame({
+        "Predicted X": y_pred_x,
+        "Predicted Y": y_pred_y,
+        "True X": df_predict["point_x"] if "point_x" in df_predict else y_pred_x,
+        "True Y": df_predict["point_y"] if "point_y" in df_predict else y_pred_y
+    })
+
+    # Calcular métricas
+    precision_x = df_data.groupby(["True X", "True Y"]).apply(func_precision_x)
+    precision_y = df_data.groupby(["True X", "True Y"]).apply(func_presicion_y)
+    precision_xy = (precision_x + precision_y) / 2
+    precision_xy /= np.mean(precision_xy)
+
+    accuracy_x = df_data.groupby(["True X", "True Y"]).apply(func_accuracy_x)
+    accuracy_y = df_data.groupby(["True X", "True Y"]).apply(func_accuracy_y)
+    accuracy_xy = (accuracy_x + accuracy_y) / 2
+    accuracy_xy /= np.mean(accuracy_xy)
+
+    # Estrutura final
+    data = {}
+    for index, row in df_data.iterrows():
+        outer_key = str(int(row["True X"]))
+        inner_key = str(int(row["True Y"]))
+        if outer_key not in data:
+            data[outer_key] = {}
+        data[outer_key][inner_key] = {
+            "predicted_x": df_data[
+                (df_data["True X"] == row["True X"]) &
+                (df_data["True Y"] == row["True Y"])
+            ]["Predicted X"].tolist(),
+            "predicted_y": df_data[
+                (df_data["True X"] == row["True X"]) &
+                (df_data["True Y"] == row["True Y"])
+            ]["Predicted Y"].tolist(),
+            "PrecisionSD": precision_xy[(row["True X"], row["True Y"])],
+            "Accuracy": accuracy_xy[(row["True X"], row["True Y"])],
+        }
+
+    data["centroids"] = kmeans_model.cluster_centers_.tolist()
+    return data
+
 
 def train_to_validate_calib(calib_csv_file, predict_csv_file):
     dataset_train_path = calib_csv_file

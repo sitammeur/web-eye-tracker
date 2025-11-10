@@ -10,11 +10,8 @@ import os
 import pandas as pd
 import traceback
 import re
-<<<<<<< HEAD
 import requests
-=======
 from flask import Flask, request, Response, send_file
->>>>>>> 42a70612727088340cf95589066fb593eb246472
 
 # Local imports from app
 from app.services.storage import save_file_locally
@@ -161,6 +158,8 @@ def calib_results():
     calib_points = json.loads(request.form['calib_circle_iris_points'])
     screen_height = json.loads(request.form['screen_height'])
     screen_width = json.loads(request.form['screen_width'])
+    model_X = json.loads(request.form.get('model', '"Linear Regression"'))
+    model_Y = json.loads(request.form.get('model', '"Linear Regression"'))
     k = json.loads(request.form['k'])
 
     # Generate csv dataset of calibration points
@@ -215,7 +214,7 @@ def calib_results():
         print("I/O error")
 
     # Run prediction
-    data = gaze_tracker.predict(calib_csv_file, calib_csv_file, k)
+    data = gaze_tracker.predict(calib_csv_file, k, model_X, model_Y)
 
     if from_ruxailab:
         try:
@@ -238,30 +237,28 @@ def calib_results():
 
     return Response(json.dumps(data), status=200, mimetype='application/json')
 
-
-
 def batch_predict():
     try:
         data = request.get_json()
-
         iris_data = data['iris_tracking_data']
         k = data.get('k', 3)
         screen_height = data.get('screen_height')
         screen_width = data.get('screen_width')
+        model_X = data.get('model_X', 'Linear Regression')
+        model_Y = data.get('model_Y', 'Linear Regression')
+        calib_id = data.get('calib_id')
+        if not calib_id:
+            return Response("Missing 'calib_id' in request", status=400)
 
-        base_path = Path().absolute() / 'app/services/calib_validation/csv/data'
-        calib_csv_path = base_path / 'vcczxvzxcv_fixed_train_data.csv'
+        base_path = Path().absolute() / 'app/services/calib_validation/csv/data' 
+        calib_csv_path = base_path / f"{calib_id}_fixed_train_data.csv"
         predict_csv_path = base_path / 'temp_batch_predict.csv'
 
         print(f"Calib CSV Path: {calib_csv_path}")
         print(f"Predict CSV Path: {predict_csv_path}")
         print(f"Iris data sample (até 3): {iris_data[:3]}")
 
-        # Debug: colunas do CSV de calibração
-        df_calib = pd.read_csv(calib_csv_path)
-        print("Colunas do CSV de calibração:", df_calib.columns.tolist())
-
-        # Cria CSV temporário com dados de íris para predição
+        # Gera CSV temporário com os dados de íris
         with open(predict_csv_path, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=[
                 'left_iris_x', 'left_iris_y', 'right_iris_x', 'right_iris_y'
@@ -275,33 +272,43 @@ def batch_predict():
                     'right_iris_y': item['right_iris_y']
                 })
 
-        # Chama a predição com os dois CSVs de calibração
-        predictions = gaze_tracker.predict(
+        # Chama a função de predição corretamente
+        predictions_raw = gaze_tracker.predict_new_data(
             calib_csv_path,
-            calib_csv_path,
+            predict_csv_path,
+            model_X,
+            model_Y,
             k
         )
 
-        # Verifica se o retorno é lista, dicionário ou outro
-        if isinstance(predictions, list):
-            # Se for lista, adiciona timestamp e metadados a cada item
-            for i in range(len(predictions)):
-                predictions[i]['timestamp'] = iris_data[i].get('timestamp')
-                if screen_height is not None:
-                    predictions[i]['screen_height'] = screen_height
-                if screen_width is not None:
-                    predictions[i]['screen_width'] = screen_width
-        elif isinstance(predictions, dict):
-            # Se for dicionário, anexa metadados gerais (exemplo)
-            if screen_height is not None:
-                predictions['screen_height'] = screen_height
-            if screen_width is not None:
-                predictions['screen_width'] = screen_width
-            # Timestamp pode não fazer sentido em dicionário com estrutura complexa
-        else:
-            print("Retorno da predição tem tipo inesperado:", type(predictions))
+        # Constrói uma resposta mais visual e direta
+        result = []
+        if isinstance(predictions_raw, dict):
+            # Percorre o dicionário retornado e transforma em lista plana
+            for true_x, inner_dict in predictions_raw.items():
+                if true_x == "centroids":
+                    continue
+                for true_y, info in inner_dict.items():
+                    pred_x_list = info.get("predicted_x", [])
+                    pred_y_list = info.get("predicted_y", [])
+                    precision = info.get("PrecisionSD")
+                    accuracy = info.get("Accuracy")
 
-        return Response(json.dumps(predictions), status=200, mimetype='application/json')
+                    for i, (px, py) in enumerate(zip(pred_x_list, pred_y_list)):
+                        timestamp = iris_data[i].get("timestamp") if i < len(iris_data) else None
+                        result.append({
+                            "timestamp": timestamp,
+                            "predicted_x": px,
+                            "predicted_y": py,
+                            "precision": precision,
+                            "accuracy": accuracy,
+                            "screen_width": screen_width,
+                            "screen_height": screen_height
+                        })
+        else:
+            print("Retorno inesperado da função predict:", type(predictions_raw))
+
+        return Response(json.dumps(result), status=200, mimetype='application/json')
 
     except Exception as e:
         print("Erro na batch_predict:", e)
