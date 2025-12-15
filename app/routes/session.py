@@ -6,6 +6,11 @@ import json
 import csv
 
 from pathlib import Path
+import os
+import pandas as pd
+import traceback
+import re
+import requests
 from flask import Flask, request, Response, send_file
 
 # Local imports from app
@@ -147,26 +152,15 @@ app = Flask(__name__)
 
 
 def calib_results():
-    """
-    Generate calibration results.
-
-    This function generates calibration results based on the provided form data.
-    It saves the calibration points to a CSV file. Then, it uses the gaze_tracker module to predict the calibration results.
-
-    Returns:
-        Response: A JSON response containing the calibration results.
-
-    Raises:
-        IOError: If there is an error while writing to the CSV files.
-    """
-    # Get form data from request
-    file_name = json.loads(request.form["file_name"])
-    fixed_points = json.loads(request.form["fixed_circle_iris_points"])
-    calib_points = json.loads(request.form["calib_circle_iris_points"])
-    screen_height = json.loads(request.form["screen_height"])
-    screen_width = json.loads(request.form["screen_width"])
-    k = json.loads(request.form["k"])
-    model = json.loads(request.form["model"])
+    from_ruxailab = json.loads(request.form['from_ruxailab'])
+    file_name = json.loads(request.form['file_name'])
+    fixed_points = json.loads(request.form['fixed_circle_iris_points'])
+    calib_points = json.loads(request.form['calib_circle_iris_points'])
+    screen_height = json.loads(request.form['screen_height'])
+    screen_width = json.loads(request.form['screen_width'])
+    model_X = json.loads(request.form.get('model', '"Linear Regression"'))
+    model_Y = json.loads(request.form.get('model', '"Linear Regression"'))
+    k = json.loads(request.form['k'])
 
     # Generate csv dataset of calibration points
     os.makedirs(
@@ -219,14 +213,107 @@ def calib_results():
     except IOError:
         print("I/O error")
 
-    # data = gaze_tracker.train_to_validate_calib(calib_csv_file, predict_csv_file)
+    # Run prediction
+    data = gaze_tracker.predict(calib_csv_file, k, model_X, model_Y)
 
-    # Predict calibration results
-    data = gaze_tracker.predict(calib_csv_file, k, model_X=model, model_Y=model)
+    if from_ruxailab:
+        try:
+            payload = {
+                "session_id": file_name,
+                "model": data,
+                "screen_height": screen_height,
+                "screen_width": screen_width,
+                "k": k
+            }
 
-    # Return calibration results
-    return Response(json.dumps(data), status=200, mimetype="application/json")
+            RUXAILAB_WEBHOOK_URL = "https://receivecalibration-ffptzpxikq-uc.a.run.app"
 
+            print("file_name:", file_name)
+
+            resp = requests.post(RUXAILAB_WEBHOOK_URL, json=payload)
+            print("Enviado para RuxaiLab:", resp.status_code, resp.text)
+        except Exception as e:
+            print("Erro ao enviar para RuxaiLab:", e)
+
+    return Response(json.dumps(data), status=200, mimetype='application/json')
+
+def batch_predict():
+    try:
+        data = request.get_json()
+        iris_data = data['iris_tracking_data']
+        k = data.get('k', 3)
+        screen_height = data.get('screen_height')
+        screen_width = data.get('screen_width')
+        model_X = data.get('model_X', 'Linear Regression')
+        model_Y = data.get('model_Y', 'Linear Regression')
+        calib_id = data.get('calib_id')
+        if not calib_id:
+            return Response("Missing 'calib_id' in request", status=400)
+
+        base_path = Path().absolute() / 'app/services/calib_validation/csv/data' 
+        calib_csv_path = base_path / f"{calib_id}_fixed_train_data.csv"
+        predict_csv_path = base_path / 'temp_batch_predict.csv'
+
+        print(f"Calib CSV Path: {calib_csv_path}")
+        print(f"Predict CSV Path: {predict_csv_path}")
+        print(f"Iris data sample (até 3): {iris_data[:3]}")
+
+        # Gera CSV temporário com os dados de íris
+        with open(predict_csv_path, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=[
+                'left_iris_x', 'left_iris_y', 'right_iris_x', 'right_iris_y'
+            ])
+            writer.writeheader()
+            for item in iris_data:
+                writer.writerow({
+                    'left_iris_x': item['left_iris_x'],
+                    'left_iris_y': item['left_iris_y'],
+                    'right_iris_x': item['right_iris_x'],
+                    'right_iris_y': item['right_iris_y']
+                })
+
+        # Chama a função de predição corretamente
+        predictions_raw = gaze_tracker.predict_new_data(
+            calib_csv_path,
+            predict_csv_path,
+            model_X,
+            model_Y,
+            k
+        )
+
+        # Constrói uma resposta mais visual e direta
+        result = []
+        if isinstance(predictions_raw, dict):
+            # Percorre o dicionário retornado e transforma em lista plana
+            for true_x, inner_dict in predictions_raw.items():
+                if true_x == "centroids":
+                    continue
+                for true_y, info in inner_dict.items():
+                    pred_x_list = info.get("predicted_x", [])
+                    pred_y_list = info.get("predicted_y", [])
+                    precision = info.get("PrecisionSD")
+                    accuracy = info.get("Accuracy")
+
+                    for i, (px, py) in enumerate(zip(pred_x_list, pred_y_list)):
+                        timestamp = iris_data[i].get("timestamp") if i < len(iris_data) else None
+                        result.append({
+                            "timestamp": timestamp,
+                            "predicted_x": px,
+                            "predicted_y": py,
+                            "precision": precision,
+                            "accuracy": accuracy,
+                            "screen_width": screen_width,
+                            "screen_height": screen_height
+                        })
+        else:
+            print("Retorno inesperado da função predict:", type(predictions_raw))
+
+        return Response(json.dumps(result), status=200, mimetype='application/json')
+
+    except Exception as e:
+        print("Erro na batch_predict:", e)
+        traceback.print_exc()
+        return Response("Erro interno na predição", status=500)
 
 # def session_results():
 #     session_id = request.args.__getitem__('id')
